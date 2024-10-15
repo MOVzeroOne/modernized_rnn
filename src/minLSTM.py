@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class minLSTM(nn.Module):
-    def __init__(self, input_size:int,hidden_size:int):
+    def __init__(self, input_size:int,hidden_size:int) -> None:
         super().__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -13,15 +13,15 @@ class minLSTM(nn.Module):
         self.linear_h = nn.Linear(input_size,hidden_size)
     
     @staticmethod
-    def g(x):
+    def g(x:torch.Tensor) -> torch.Tensor:
         return torch.where(x >= 0, x+0.5, torch.sigmoid(x))
     
     @staticmethod
-    def log_g(x):
+    def log_g(x:torch.Tensor) -> torch.Tensor:
         return torch.where(x >= 0, (F.relu(x)+0.5).log(),-F.softplus(-x))
     
     @staticmethod
-    def parallel_scan_log(log_coeffs, log_values):
+    def parallel_scan_log(log_coeffs:torch.Tensor, log_values:torch.Tensor) -> torch.Tensor:
         # log_coeffs: (batch_size, seq_len, input_size)
         # log_values: (batch_size, seq_len + 1, input_size)
         a_star = F.pad(torch.cumsum(log_coeffs, dim=1), (0, 0, 1, 0))
@@ -29,7 +29,7 @@ class minLSTM(nn.Module):
         log_h = a_star + log_h0_plus_b_star
         return torch.exp(log_h)[:, 1:]
 
-    def forward(self, x, h_0=None):
+    def forward(self, x:torch.Tensor, h_0:torch.Tensor=None) -> torch.Tensor:
         # x: (batch_size, seq_len, input_size)
         # h_0: (batch_size, 1, hidden_size)
         if(h_0 is None):
@@ -43,7 +43,7 @@ class minLSTM(nn.Module):
         h = self.parallel_scan_log(log_f,torch.cat([log_h_0, log_i + log_tilde_h], dim=1))
         return h
 
-    def sequential_forward(self, x_t, h_prev=None):
+    def sequential_forward(self, x_t:torch.Tensor, h_prev:torch.Tensor=None) -> torch.Tensor:
         # x_t: (batch_size, input_size)
         # h_prev: (batch_size, hidden_size)
         if(h_prev is None):
