@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class minLSTM(nn.Module):
-    def __init__(self, input_size:int,hidden_size:int) -> None:
+    def __init__(self, input_size:int,hidden_size:int):
         super().__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
